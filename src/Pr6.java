@@ -268,6 +268,16 @@ public class Pr6 {
                 if (X == i) {
                     vars.add(i);
                     Pe.add(x);
+
+                    for (Node j : E) {
+                        for (Node k : j.getAncestors()) {
+                            if (i == k) {
+                                AlphaVars.add(i);
+                                Ae.add("none");
+                            }
+                        }
+                    }
+
                     added = true;
                 }
                 if (!added) {
@@ -309,22 +319,31 @@ public class Pr6 {
             }
         }
 
+        if(AlphaVars.contains(X)) {
+            for (Node i : X.getAncestors()) {
+                if(!AlphaVars.contains(i)) {
+                    AlphaVars.add(i);
+                    Ae.add("none");
+                }
+            }
+        }
+
         // Check
-        for (Node i : AlphaVars) {
-            System.out.println("AV: " + i.getVariable());
-        }
-
-        for (Node i : vars) {
-            System.out.println("V: " + i.getVariable());
-        }
-
-        for (String i : Ae) {
-            System.out.println("Ae: " + i);
-        }
-
-        for (String i : Pe) {
-            System.out.println("Pe: " + i);
-        }
+//        for (Node i : AlphaVars) {
+//            System.out.println("AV: " + i.getVariable());
+//        }
+//
+//        for (Node i : vars) {
+//            System.out.println("V: " + i.getVariable());
+//        }
+//
+//        for (String i : Ae) {
+//            System.out.println("Ae: " + i);
+//        }
+//
+//        for (String i : Pe) {
+//            System.out.println("Pe: " + i);
+//        }
 
 //        System.out.println("Calculate 1/a: ");
         double a = EnumerateAll(AlphaVars, Ae,0);
