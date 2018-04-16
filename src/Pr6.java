@@ -55,6 +55,9 @@ public class Pr6 {
     // MAIN METHOD
     public static void main(String[] args) {
 
+        // Test
+//        System.out.println(Ptable[0][0]);
+
         // Build the Bayesian Network from Fig. 1
         BayesianNetwork bn = buildBayesianNetwork();
 
@@ -65,21 +68,21 @@ public class Pr6 {
         double prob = EnumerationAsk(bn);
 
         //Check
-        System.out.println("X: " + X.getVariable());
-        System.out.println("x: " + x);
-        for (Node i : E) {
-            System.out.println("E: " + i.getVariable());
-        }
-        for (String i : e) {
-            System.out.println("e: " + i);
-        }
+//        System.out.println("X: " + X.getVariable());
+//        System.out.println("x: " + x);
+//        for (Node i : E) {
+//            System.out.println("E: " + i.getVariable());
+//        }
+//        for (String i : e) {
+//            System.out.println("e: " + i);
+//        }
 
         //Output the probability of the Query outcome given the evidence outcomes
-        System.out.printf("The probability is: %.5f", prob);
+        System.out.printf("The probability is: %.4f", prob);
 
     }
 
-
+    // Static Methods
     private static BayesianNetwork buildBayesianNetwork() {
 
         // Initialize a new Bayesian Network
@@ -306,6 +309,7 @@ public class Pr6 {
             }
         }
 
+        // Check
         for (Node i : AlphaVars) {
             System.out.println("AV: " + i.getVariable());
         }
@@ -314,57 +318,87 @@ public class Pr6 {
             System.out.println("V: " + i.getVariable());
         }
 
-        for (String i : Pe) {
-            System.out.println("Pe: " + i);
-        }
-
         for (String i : Ae) {
             System.out.println("Ae: " + i);
         }
 
-        System.out.println("Calculate 1/a: ");
+        for (String i : Pe) {
+            System.out.println("Pe: " + i);
+        }
+
+//        System.out.println("Calculate 1/a: ");
         double a = EnumerateAll(AlphaVars, Ae,0);
-        System.out.println("Calculate P: ");
+//        System.out.println("Calculate P: ");
         double p = EnumerateAll(vars, Pe, 0);
 
-        return p/a;
+//        System.out.println("p: " + p +"\n" + "a: " + a);
+
+        return (p / a);
     }
 
-    private static double EnumerateAll(ArrayList<Node> V, ArrayList<String> e, int Vi) {
+    private static double EnumerateAll(ArrayList<Node> V, ArrayList<String> ev, int Vi) {
+
+//        System.out.println();
+//        System.out.println("V: ");
+//        for (Node i : V) {
+//            System.out.println(i.getVariable());
+//        }
+//        System.out.println("ev: ");
+//        for (String i : ev) {
+//            System.out.println(i);
+//        }
+//        System.out.println();
+//        System.out.println();
 
         // Base Step: Check if all variables have been used, if so end recursion
         if (Vi == V.size()) { return 1.0; }
 
-        // Else, grab the first variable from vars and it's evidence value from the parallel list e
+        // Else, grab the first variable from vars and it's evidence value from the parallel list ev
         Node Y = V.get(Vi);
-        String y = e.get(Vi);
+        String y = ev.get(Vi);
 
         // Then check if Y has a value y in e, if so:
         if (!y.equals("none")) {
 
             // Calculate P(Y=y | Parents(Y)) X EnumerateAll(V,e)
             // If no parents, then just P(Y=y) X EnumerateAll(V,e)
-            if(Y.getParents().isEmpty()) {
+            if(Y.getParents().size() == 0) {
+
+
                 for (int i = 0; i < Y.getMeasure().length; i++) {
                     if(Y.getMeasure()[i].equals(y)) {
-                        System.out.println("Vi: "+Vi+" "+ Y.getTable()[i][0] + " " + Y.getVariable());
-                        return Y.getTable()[i][0] * EnumerateAll(V,e,Vi + 1);
+//                        System.out.println("Vi: "+Vi+" "+ Y.getTable()[i][0] + " " + Y.getVariable());
+                        return Y.getTable()[i][0] * EnumerateAll(V,ev,Vi+1);
                     }
                 }
+
+
             } else { // Else, for each parent get it's y and determine P(Y=y | Pa1 = p1y, Pa2=p2y, ...) X EnumerateAll(V,e)
 
                 int tableindex = 0;
                 // So, determine the number of parents of Y
-                for (int i = Y.getParents().size()-1; i > 0; i--) {
+                for (int i = 0; i < Y.getParents().size(); i++) {
+
+                    // pow is a temp variable used to help determine the index of the correct entry in the table for
+                    // the given values of the Parent(s)
+                    int pow = Y.getParents().size()-1-i;
+
+//                    System.out.println("i: " + i);
 
                     // And for each parent get its possible evidence values
-                    String yofParent = e.get(V.indexOf(Y.getParents().get(i)));
+                    String yofParent = ev.get(V.indexOf(Y.getParents().get(i)));
+
+//                    System.out.println("Y: " + Y.getVariable());
+//                    System.out.println("P: " + Y.getParents().get(i).getVariable());
+//                    System.out.println("yofP: " + yofParent);
+
                     String[] measureofParent = Y.getParents().get(i).getMeasure();
 
                     //Then find if its evidence value indicates a 0 or 1 and use that to calculate the table entry index
                     for (int j = 0; j < measureofParent.length; j++) {
                         if(measureofParent[j].equals(yofParent)) {
-                            tableindex += Math.pow(2, i) * j;
+                            tableindex += Math.pow(2, pow) * j;
+//                            System.out.println(tableindex);
                         }
                     }
                 }
@@ -372,8 +406,8 @@ public class Pr6 {
                 //Then find if Y's evidence value indicates a 0 or 1 and use that to calculate the table entry's index
                 for (int i = 0; i < Y.getMeasure().length; i++) {
                     if (Y.getMeasure()[i].equals(y)) {
-                        System.out.println("Vi: "+Vi+" "+Y.getTable()[tableindex][i] + " " + Y.getVariable());
-                        return Y.getTable()[tableindex][i] * EnumerateAll(V, e, Vi + 1);
+//                        System.out.println("Vi: "+Vi+" "+Y.getTable()[tableindex][i] + " " + Y.getVariable());
+                        return Y.getTable()[tableindex][i] * EnumerateAll(V, ev, Vi + 1);
                     }
                 }
             }
@@ -387,14 +421,15 @@ public class Pr6 {
             ArrayList<String> ey1 = new ArrayList<>();
             ArrayList<String> ey2 = new ArrayList<>();
 
-            ey1.addAll(e);
-            ey2.addAll(e);
+            ey1.addAll(ev);
+            ey2.addAll(ev);
 
             ey1.set(Vi, y1);
             ey2.set(Vi, y2);
 
-            System.out.println(y1);
-            System.out.println(y2);
+//            System.out.println(y1);
+//            System.out.println(y2);
+//            System.out.println("Split");
 
             return EnumerateAll(V, ey1, Vi) + EnumerateAll(V,ey2,Vi);
 
